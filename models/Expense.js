@@ -3,6 +3,10 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const ExpenseSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'users'
+  },
   name: {
     type: String,
     required: true

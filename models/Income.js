@@ -3,6 +3,10 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const IncomeSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'users'
+  },
   name: {
     type: String,
     required: true

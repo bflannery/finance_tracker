@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const gravatar = require('gravatar')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const keys = require('../../config/keys')
@@ -116,7 +117,6 @@ router.get(
   (req, res) => {
     res.json({
       id: req.user.id,
-      name: req.user.name,
       name: req.user.name
     })
   }

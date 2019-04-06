@@ -11,7 +11,7 @@ class Dashboard extends Component {
   componentDidMount() {}
 
   render() {
-    return <h4 className> Dashboard </h4>
+    return <h4> Dashboard </h4>
   }
 }
 
