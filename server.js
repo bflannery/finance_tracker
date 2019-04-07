@@ -34,7 +34,7 @@ app.get('/', (req, res) => res.send('Hello'))
 
 // User Routes
 app.use('/api/users', users)
-app.use('/api/portfolio', portfolios)
+app.use('/api/portfolios', portfolios)
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'))

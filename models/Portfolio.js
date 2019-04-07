@@ -7,6 +7,10 @@ const PortfolioSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'users'
   },
+  name: {
+    type: String,
+    required: true
+  },
   income: [
     {
       type: Schema.Types.ObjectId,

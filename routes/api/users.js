@@ -48,7 +48,7 @@ router.post('/register', (req, res) => {
           newUser
             .save()
             .then(user => res.json(user))
-            .catch(err => console.log({ err }))
+            .catch(err => res.json(err))
         })
       })
     }
@@ -102,24 +102,7 @@ router.post('/login', (req, res) => {
           return res.status(400).json(errors)
         }
       })
-      .catch(err => {
-        console.log({ err })
-      })
+      .catch(err => res.json(err))
   })
 })
-
-// @route   GET api/users/current
-// @desc    Return current user
-// @access  Private
-router.get(
-  '/current',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    res.json({
-      id: req.user.id,
-      name: req.user.name
-    })
-  }
-)
-
 module.exports = router
