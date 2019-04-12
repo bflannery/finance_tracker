@@ -55,14 +55,7 @@ class App extends Component {
                   component={DashboardContainer}
                 />
               </Switch>
-              {/* <Switch>
-                <PrivateRoute
-                  exact
-                  path="/edit-profile"
-                  component={EditProfile}
-                />
-              </Switch> */}
-              {/* <Route exact path="/not-found" component={NotFound} /> */}
+              <Route exact path="/not-found" component={NotFound} />
             </div>
             <Footer />
           </div>

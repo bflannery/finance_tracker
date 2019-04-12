@@ -4,7 +4,6 @@ import asyncWrapper from '../utils/asyncWrapper'
 import {
   CLEAR_CURRENT_PORTFOLIO,
   SET_PORTFOLIO,
-  SET_PORTFOLIOS,
   PORTFOLIO_LOADING,
   SET_ERRORS,
   SET_CURRENT_USER
@@ -34,16 +33,20 @@ export const setErrorsAction = error => ({
 })
 
 // Get current portfolio
-export const getCurrentPortfolio = () => async dispatch => {
+export const getCurrentPortfolio = id => async dispatch => {
   dispatch(setPortfolioLoading())
-  const { error, response } = await asyncWrapper(axios.get('/api/portfolio'))
+  const { error, response } = await asyncWrapper(
+    axios.get(`/api/portfolios/${id}`)
+  )
   if (!error) return dispatch(setCurrentPortfolio(response.data))
-  return dispatch(setCurrentPortfolio())
+  return dispatch(setErrorsAction(error.response.data))
 }
 
 // Create portfolio
 export const createPortfolio = (portfolioData, history) => async dispatch => {
-  const { error } = await asyncWrpper(axios.post('/api/portfolio', portfolioData))
+  const { error } = await asyncWrapper(
+    axios.post('/api/portfolio', portfolioData)
+  )
   if (!error) return history.push('/dashboard')
   return dispatch(setErrorsAction(error.response.data))
 }
@@ -78,14 +81,14 @@ export const deleteIncome = id => async dispatch => {
 // Add Expense
 export const addExpense = (expenseData, history) => async dispatch => {
   const { error } = await asyncWrapper(
-    axios.post('/api/portfolio/expenses', incomeData)
+    axios.post('/api/portfolio/expenses', expenseData)
   )
   if (!error) return history.push('/dashboard')
   return dispatch(setErrorsAction(error.response.data))
 }
 
 // Delete Expense
-export const deleteIncome = id => async dispatch => {
+export const deleteExpense = id => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.delete(`/api/portfolio/expenses/${id}`)
   )
@@ -96,7 +99,7 @@ export const deleteIncome = id => async dispatch => {
 // Add Bill
 export const addBill = (billData, history) => async dispatch => {
   const { error } = await asyncWrapper(
-    axios.post('/api/portfolio/bills', incomeData)
+    axios.post('/api/portfolio/bills', billData)
   )
   if (!error) return history.push('/dashboard')
   return dispatch(setErrorsAction(error.response.data))
@@ -110,4 +113,3 @@ export const deleteBill = id => async dispatch => {
   if (!error) return dispatch(setCurrentPortfolio(response.data))
   return dispatch(setErrorsAction(error.response.data))
 }
-

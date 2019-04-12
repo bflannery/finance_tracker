@@ -12,6 +12,30 @@ const Portfolio = require('../../models/Portfolio')
 // Load User Model
 const User = require('../../models/User')
 
+// @route   GET api/profile/user/:user_id
+// @desc    Get profile by user ID
+// @access  Public
+
+router.get('/:user_id', (req, res) => {
+  const errors = {}
+  console.log({
+    userId: req.params.user_id
+  })
+  Portfolio.findOne({ user: req.params.user_id })
+    .then(portfolio => {
+      if (!portfolio) {
+        errors.noPortfolio = 'There is no portfolio for this user'
+        return res.status(404).json(errors)
+      }
+
+      res.json(portfolio)
+    })
+    .catch(err => {
+      errors.noPortfolio = 'There is no portfolio for this user'
+      res.status(404).json(errors)
+    })
+})
+
 // @route   POST api/portfolios/user_id
 // @desc    Create a portfolio
 // @access  Private
