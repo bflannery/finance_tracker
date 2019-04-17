@@ -7,6 +7,7 @@ const passport = require('passport')
 
 const users = require('./routes/api/users')
 const portfolios = require('./routes/api/portfolios')
+const incomes = require('./routes/api/incomes')
 
 const app = express()
 
@@ -35,6 +36,7 @@ app.get('/', (req, res) => res.send('Hello'))
 // User Routes
 app.use('/api/users', users)
 app.use('/api/portfolios', portfolios)
+app.use('/api/incomes', incomes)
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'))

@@ -17,6 +17,7 @@ import Register from './components/auth/Register'
 import Login from './components/auth/Login'
 import DashboardContainer from './components/dashboard/DashboardContainer'
 import NotFound from './components/not-found/NotFound'
+import IncomeContainer from './components/income/IncomeContainer'
 
 // Check for token
 if (localStorage.jwtToken) {
@@ -53,6 +54,13 @@ class App extends Component {
                   exact
                   path="/dashboard"
                   component={DashboardContainer}
+                />
+              </Switch>
+              <Switch>
+                <PrivateRoute
+                  exact
+                  path="/income"
+                  component={IncomeContainer}
                 />
               </Switch>
               <Route exact path="/not-found" component={NotFound} />

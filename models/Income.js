@@ -3,11 +3,11 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const IncomeSchema = new Schema({
-  user: {
+  portfolio: {
     type: Schema.Types.ObjectId,
-    ref: 'users'
+    ref: 'portfolios'
   },
-  name: {
+  source: {
     type: String,
     required: true
   },
