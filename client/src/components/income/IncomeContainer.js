@@ -7,7 +7,7 @@ import { getCurrentPortfolio } from '../../actions/portfolioActions'
 import portfoliosReducer from '../../reducers/portfoliosReducer'
 import TextFieldGroup from '../common/TextFieldGroup'
 
-class IncomeContainer extends Component {
+class SourceContainer extends Component {
   constructor(props) {
     super(props)
 
@@ -52,7 +52,7 @@ class IncomeContainer extends Component {
             <div className="col-md-8">
               <div className="card card-faded">
                 <div className="card-header col-md-12">
-                  <h1 className="card-title text-center">Income</h1>
+                  <h1 className="card-title text-center">Overview</h1>
                 </div>
                 <div className="card-body p-0">
                   <ul className="list-group list-group-flush">
@@ -93,13 +93,22 @@ class IncomeContainer extends Component {
             <div className="col-md-4">
               <div className="card card-faded">
                 <div className="card-header col-xs-12">
-                  <h1 className="card-title text-center">Add New Income</h1>
+                  <h1 className="card-title text-center">
+                    Add New Income/Expense
+                  </h1>
                   <small className="d-block pb-3">* = required fields</small>
                 </div>
                 <div className="card-body">
                   <form onSubmit={this.onSubmit}>
                     <TextFieldGroup
-                      placeholder="* Income Source"
+                      placeholder="* Type"
+                      name="source"
+                      value={this.state.name}
+                      onChange={this.onChange}
+                      error={errors.name}
+                    />
+                    <TextFieldGroup
+                      placeholder="* Name"
                       name="source"
                       value={this.state.name}
                       onChange={this.onChange}
@@ -135,7 +144,7 @@ class IncomeContainer extends Component {
   }
 }
 
-IncomeContainer.propTypes = {
+SourceContainer.propTypes = {
   auth: PropTypes.object.isRequired
 }
 
@@ -150,4 +159,4 @@ export default connect(
   {
     getCurrentPortfolio
   }
-)(IncomeContainer)
+)(SourceContainer)

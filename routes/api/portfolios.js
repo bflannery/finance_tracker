@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const passport = require('passport')
+const moment = require('moment')
 
 // Load Validation
 // const validateProfileInput = require('../../validation/portfolio')
@@ -22,12 +23,12 @@ router.get('/:user_id', (req, res) => {
     userId: req.params.user_id
   })
   Portfolio.findOne({ user: req.params.user_id })
+    .populate('income')
     .then(portfolio => {
       if (!portfolio) {
         errors.noPortfolio = 'There is no portfolio for this user'
         return res.status(404).json(errors)
       }
-
       res.json(portfolio)
     })
     .catch(err => {

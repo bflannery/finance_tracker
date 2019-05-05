@@ -5,7 +5,7 @@ const Schema = mongoose.Schema
 const IncomeSchema = new Schema({
   portfolio: {
     type: Schema.Types.ObjectId,
-    ref: 'portfolios'
+    ref: 'Portfolio'
   },
   source: {
     type: String,
@@ -15,11 +15,16 @@ const IncomeSchema = new Schema({
     type: String,
     required: true
   },
-  date: {
+  createdAt: {
     type: String,
     required: true,
-    default: Date.now()
+    default: new Date().toISOString()
+  },
+  lastUpdated: {
+    type: String,
+    required: true,
+    default: new Date().toISOString()
   }
 })
 
-module.exports = Income = mongoose.model('incomes', IncomeSchema)
+module.exports = Income = mongoose.model('Income', IncomeSchema)

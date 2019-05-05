@@ -3,11 +3,11 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const ExpenseSchema = new Schema({
-  user: {
+  portfolio: {
     type: Schema.Types.ObjectId,
-    ref: 'users'
+    ref: 'Portfolio'
   },
-  name: {
+  source: {
     type: String,
     required: true
   },
@@ -15,15 +15,16 @@ const ExpenseSchema = new Schema({
     type: String,
     required: true
   },
-  recurring: {
-    type: Boolean,
-    default: false
-  },
-  date: {
+  createdAt: {
     type: String,
     required: true,
-    default: Date.now()
+    default: new Date().toISOString()
+  },
+  lastUpdated: {
+    type: String,
+    required: true,
+    default: new Date().toISOString()
   }
 })
 
-module.exports = Expense = mongoose.model('expenses', ExpenseSchema)
+module.exports = Expense = mongoose.model('expense', ExpenseSchema)

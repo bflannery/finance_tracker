@@ -37,22 +37,22 @@ router.post(
 
     Income.findOne({ source: req.body.source })
       .then(income => {
-        console.log({
-          income,
-          incomeFields
-        })
         if (income) {
-          console.log('GOT ONE')
           errors.source = 'An income source already exists with that name.'
           return res.status(400).json(errors)
         }
-        console.log('NOPE')
+
         // Save new income
         new Income(incomeFields)
           .save()
           .then(income => {
-            console.log({ income })
-            return res.json(income)
+            Portfolio.findById(req.params.portfolio_id)
+              .then(portfolio => {
+                portfolio.income.push(income)
+                portfolio.save()
+              })
+              .catch(err => res.json(err))
+            return res.status(200).json(income)
           })
           .catch(err => res.status(404).json(err))
       })
