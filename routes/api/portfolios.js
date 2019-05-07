@@ -13,82 +13,93 @@ const Portfolio = require('../../models/Portfolio')
 const User = require('../../models/User')
 
 // ROUTE METHODS
-const getPortfolio = (req, res) => {
+const getPortfolio = async (req, res) => {
   const errors = {}
-  Portfolio.findOne({ user: req.params.user_id })
-    .populate('income')
-    .then(portfolio => {
-      if (!portfolio) {
-        errors.noPortfolio = 'There is no portfolio for this user'
-        return res.status(404).json(errors)
-      }
-      res.json(portfolio)
-    })
-    .catch(err => {
+  try {
+    // Get inflated portfolio
+    const portfolio = await Portfolio.findOne({
+      user: req.params.user_id
+    }).populate('income')
+    // Check if portfolio exists
+    if (!portfolio) {
       errors.noPortfolio = 'There is no portfolio for this user'
-      res.status(404).json(errors)
-    })
+      return res.status(404).json(errors)
+    }
+    // Return suceess with portfolio
+    res.status(200).json(portfolio)
+  } catch (err) {
+    // Return errors
+    res.status(404).json(err)
+  }
 }
 
-const createPortoflio = (req, res) => {
-  // Check Validation
+const createPortoflio = async (req, res) => {
+  const errors = {}
+  // Check validation
   if (!req.body.name) {
-    const errors = {}
     errors.name = 'Portfolio name is required'
     // Return any errors with 400 status
     return res.status(400).json(errors)
   }
-
-  // Get fields
-  const portfolioFields = {}
-  portfolioFields.user = req.params.user_id
-  portfolioFields.name = req.body.name
-
-  // Check for existing portfolio
-  Portfolio.findOne({ name: req.body.name })
-    .then(portfolio => {
-      if (portfolio) {
-        errors.handle = 'A portfolio already exists with that name.'
-        return res.status(400).json(errors)
-      }
-      // Save new portfolio
-      new Portfolio(portfolioFields)
-        .save()
-        .then(portfolio => res.json(portfolio))
-        .catch(err => res.status(404).json(err))
-    })
-    .catch(err => res.status(404).json(err))
+  try {
+    // Get require portfolio fields from request
+    const portfolioFields = {}
+    portfolioFields.user = req.params.user_id
+    portfolioFields.name = req.body.name
+    // Get portfolio
+    const portfolio = await Portfolio.findOne({ name: req.body.name })
+    // Check for existing portfolio with same name
+    if (portfolio) {
+      errors.handle = 'A portfolio already exists with that name.'
+      return res.status(400).json(errors)
+    }
+    // Create new portoflio
+    const newPortoflio = await new Portfolio(portfolioFields).save()
+    return res.status(200).json(newPortoflio)
+  } catch (err) {
+    // Return errors
+    return res.status(404).json(err)
+  }
 }
 
-const updatePortfolio = (req, res) => {
-  const requestBody = req.body
-  // Check Validation
-  if (!requestBody.name) {
-    const errors = {}
-    errors.name = 'Portfolio name is required'
-    // Return any errors with 400 status
-    return res.status(400).json(errors)
+const updatePortfolio = async (req, res) => {
+  const errors = {}
+  try {
+    const requestBody = req.body
+    // Check Validation
+    if (!requestBody.name) {
+      errors.name = 'Portfolio name is required'
+      // Return any errors with 400 status
+      return res.status(400).json(errors)
+    }
+    // Update portfolio timestamp
+    const requestPortolio = {
+      ...requestBody,
+      lastUpdated: new Date().toISOString()
+    }
+    // Find and update portfolio
+    const updatedPortfolio = Portfolio.findOneAndUpdate(
+      { user: req.params.user_id },
+      { $set: requestPortolio },
+      { new: true }
+    )
+    // Return success with updated portfolio
+    return res.status(200).json(updatedPortfolio)
+  } catch (err) {
+    // Return errors
+    res.status(404).json(err)
   }
-
-  // Get fields
-  const requestPortolio = {
-    ...requestBody,
-    lastUpdated: new Date().toISOString()
-  }
-
-  Portfolio.findOneAndUpdate(
-    { user: req.params.user_id },
-    { $set: requestPortolio },
-    { new: true }
-  )
-    .then(portfolio => res.json(portfolio))
-    .catch(err => res.status(404).json(err))
 }
 
-const deletePortfolio = (req, res) => {
-  Portfolio.findByIdAndRemove(req.params.portfolio_id)
-    .then(deletedPortfolio => res.status(200).json(deletedPortfolio))
-    .catch(err => res.status(404).json(err))
+const deletePortfolio = async (req, res) => {
+  try {
+    const deletedPortfolio = await Portfolio.findByIdAndRemove(
+      req.params.portfolio_id
+    )
+    return res.status(200).json(deletedPortfolio)
+  } catch (err) {
+    res.status(404).json(err)
+  }
 }
 
 // ROUTES
@@ -96,7 +107,6 @@ const deletePortfolio = (req, res) => {
 // @route   GET api/profile/user/:user_id
 // @desc    Get profile by user ID
 // @access  Public
-
 router.get('/:user_id', (req, res) => getPortfolio(req, res))
 
 // @route   POST api/portfolios/user_id

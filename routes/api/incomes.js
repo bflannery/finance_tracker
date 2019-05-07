@@ -11,40 +11,21 @@ const Portfolio = require('../../models/Portfolio')
 const User = require('../../models/User')
 
 // ROUTE METHODS
-
-const getIncome = (req, res) => {
+const getPortfolioIncomes = async (req, res) => {
   const errors = {}
-  Income.findById(req.params.income_id)
-    .then(income => {
-      if (!income) {
-        errors.noIncomes = 'Income does not exist'
-        return res.status(404).json(incomes)
-      }
-      res.json(income)
-    })
-    .catch(err => {
-      errors.noIncomes = 'Income does not exist'
-      res.status(404).json(errors)
-    })
-}
-
-const getPortfolioIncomes = (req, res) => {
-  const errors = {}
-  Income.find({ portfolio: req.params.portfolio_id })
-    .then(incomes => {
-      if (incomes.length === 0) {
-        errors.noIncomes = 'There is no incomes for this portfolio'
-        return res.status(404).json(errors)
-      }
-      res.json(incomes)
-    })
-    .catch(err => {
+  try {
+    const incomes = await Income.find({ portfolio: req.params.portfolio_id })
+    if (incomes.length === 0) {
       errors.noIncomes = 'There is no incomes for this portfolio'
-      res.status(404).json(errors)
-    })
+      return res.status(404).json(errors)
+    }
+    res.status(200).json(incomes)
+  } catch (err) {
+    res.status(404).json(err)
+  }
 }
 
-const createPortfolioIncome = (req, res) => {
+const createPortfolioIncome = async (req, res) => {
   const errors = {}
   // Check Validation
   if (!req.body.source) {
@@ -52,67 +33,68 @@ const createPortfolioIncome = (req, res) => {
     // Return any errors with 400 status
     return res.status(400).json(errors)
   }
+  try {
+    // Get fields
+    const incomeFields = {}
+    incomeFields.portfolio = req.params.portfolio_id
+    incomeFields.source = req.body.source
+    incomeFields.amount = req.body.amount
 
-  // Get fields
-  const incomeFields = {}
-  incomeFields.portfolio = req.params.portfolio_id
-  incomeFields.source = req.body.source
-  incomeFields.amount = req.body.amount
-
-  Income.findOne({ source: req.body.source })
-    .then(income => {
-      if (income) {
-        errors.source = 'An income source already exists with that name.'
-        return res.status(400).json(errors)
-      }
-
-      // Save new income
-      new Income(incomeFields)
-        .save()
-        .then(income => {
-          Portfolio.findById(req.params.portfolio_id)
-            .then(portfolio => {
-              portfolio.income.push(income)
-              portfolio.save()
-            })
-            .catch(err => res.json(err))
-          return res.status(200).json(income)
-        })
-        .catch(err => res.status(404).json(err))
-    })
-    .catch(err => res.status(404).json(err))
-}
-
-const updateIncome = (req, res) => {
-  const errors = {}
-  const reqIncome = {
-    ...req.body,
-    lastUpdated: new Date().toISOString()
+    const existingIncome = await Income.findOne({ source: req.body.source })
+    if (existingIncome) {
+      errors.source = 'An income source already exists with that name.'
+      return res.status(400).json(errors)
+    }
+    // Save new income
+    const newIncome = await new Income(incomeFields).save()
+    // Get user portfolio
+    const portfolio = await Portfolio.findById(req.params.portfolio_id)
+    // Add income to portfolio
+    portfolio.income.push(newIncome)
+    // Save portfolio
+    portfolio.save()
+    // Return success with new income
+    return res.status(200).json(income)
+  } catch (err) {
+    res.status(404).json(err)
   }
-  Income.findOneAndUpdate(
-    { _id: req.params.income_id },
-    { $set: reqIncome },
-    { new: true }
-  )
-    .then(updatedIncome => res.status(200).json(updatedIncome))
-    .catch(err => res.status(404).json(err))
 }
 
-const deleteIncome = (req, res) => {
-  Income.findByIdAndRemove(req.params.income_id)
-    .then(deletedIncome => {
-      Portfolio.findById(deletedIncome.portfolio)
-        .then(portfolio => {
-          const newIncomes = portfolio.incomes.filter(
-            income => income === deleteIncome._id
-          )
-          portfolio.incomes = newIncomes
-          portfolio.save()
-        })
-        .catch(err => res.json(err))
-      res.status(200).json(deletedIncome)
-    })
-    .catch(err => res.status(404).json(err))
+const updateIncome = async (req, res) => {
+  try {
+    // Update income timestamp
+    const reqIncome = {
+      ...req.body,
+      lastUpdated: new Date().toISOString()
+    }
+    // Update income instance
+    const updatedIncome = await Income.findOneAndUpdate(
+      { _id: req.params.income_id },
+      { $set: reqIncome },
+      { new: true }
+    )
+    // Return sucess with newly updated income
+    res.status(200).json(updatedIncome)
+  } catch (err) {
+    res.status(404).json(err)
+  }
+}
+
+const deleteIncome = async (req, res) => {
+  try {
+    // Delete income
+    const deletedIncome = await Income.findByIdAndRemove(req.params.income_id)
+    // Get Portoflio
+    const portfolio = await Portfolio.findById(deletedIncome.portfolio)
+    // Remove income from portoflio income array
+    portfolio.income = portfolio.income.filter(id => id === deleteIncome._id)
+    // Save portfolio
+    await portfolio.save()
+    // Return success with deleted income
+    return res.status(200).json(deletedIncome)
+  } catch (err) {
+    return res.status(404).json(err)
+  }
 }
 
 // @route   GET api/incomes/portfolio_id
