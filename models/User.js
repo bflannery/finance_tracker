@@ -18,6 +18,13 @@ const UserSchema = new Schema({
   avatar: {
     type: String
   },
+  portfolios: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Portfolio',
+      default: []
+    }
+  ],
   createdAt: {
     type: String,
     required: true,
@@ -28,6 +35,10 @@ const UserSchema = new Schema({
     required: true,
     default: new Date().toISOString()
   }
+})
+
+UserSchema.pre('save', async function() {
+  console.log({ this: this })
 })
 
 module.exports = User = mongoose.model('User', UserSchema)

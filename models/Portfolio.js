@@ -4,15 +4,11 @@ const moment = require('moment')
 
 // Create Portfolio Schema
 const PortfolioSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User'
-  },
   name: {
     type: String,
     required: true
   },
-  income: [
+  incomes: [
     {
       type: Schema.Types.ObjectId,
       ref: 'Income',

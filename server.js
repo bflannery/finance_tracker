@@ -8,7 +8,9 @@ const passport = require('passport')
 const users = require('./routes/api/users')
 const portfolios = require('./routes/api/portfolios')
 const incomes = require('./routes/api/incomes')
+const expenses = require('./routes/api/expenses')
 
+// Initiaite express app
 const app = express()
 
 // Body parser middleware
@@ -37,7 +39,9 @@ app.get('/', (req, res) => res.send('Hello'))
 app.use('/api/users', users)
 app.use('/api/portfolios', portfolios)
 app.use('/api/incomes', incomes)
+app.use('/api/expenses', expenses)
 
+// Env Build
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'))
 
@@ -46,6 +50,7 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
+// App Port
 const port = process.env.PORT || 5000
 
 app.listen(port, () => console.log(`Server running on port ${port}`))

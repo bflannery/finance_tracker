@@ -44,7 +44,6 @@ const createPortoflio = async (req, res) => {
   try {
     // Get require portfolio fields from request
     const portfolioFields = {}
-    portfolioFields.user = req.params.user_id
     portfolioFields.name = req.body.name
     // Get portfolio
     const portfolio = await Portfolio.findOne({ name: req.body.name })
@@ -66,12 +65,7 @@ const updatePortfolio = async (req, res) => {
   const errors = {}
   try {
     const requestBody = req.body
-    // Check Validation
-    if (!requestBody.name) {
-      errors.name = 'Portfolio name is required'
-      // Return any errors with 400 status
-      return res.status(400).json(errors)
-    }
+
     // Update portfolio timestamp
     const requestPortolio = {
       ...requestBody,
@@ -112,10 +106,8 @@ router.get('/:user_id', (req, res) => getPortfolio(req, res))
 // @route   POST api/portfolios/user_id
 // @desc    Create a portfolio
 // @access  Private
-router.post(
-  '/:user_id',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => createPortoflio(req, res)
+router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
+  createPortoflio(req, res)
 )
 
 // @route   PUT api/portfolios/user_id

@@ -50,11 +50,11 @@ const createPortfolioIncome = async (req, res) => {
     // Get user portfolio
     const portfolio = await Portfolio.findById(req.params.portfolio_id)
     // Add income to portfolio
-    portfolio.income.push(newIncome)
+    portfolio.incomes.push(newIncome)
     // Save portfolio
     portfolio.save()
     // Return success with new income
-    return res.status(200).json(income)
+    return res.status(200).json(newIncome)
   } catch (err) {
     res.status(404).json(err)
   }
@@ -86,8 +86,8 @@ const deleteIncome = async (req, res) => {
     const deletedIncome = await Income.findByIdAndRemove(req.params.income_id)
     // Get Portoflio
     const portfolio = await Portfolio.findById(deletedIncome.portfolio)
-    // Remove income from portoflio income array
-    portfolio.income = portfolio.income.filter(id => id === deleteIncome._id)
+    // Remove income from portoflio incomes array
+    portfolio.incomes = portfolio.incomes.filter(id => id === deleteIncome._id)
     // Save portfolio
     await portfolio.save()
     // Return success with deleted income
