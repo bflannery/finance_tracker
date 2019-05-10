@@ -20,11 +20,35 @@ app.use(bodyParser.json())
 // DB Config
 const db = require('./config/keys').mongoURI
 
-// Connect to MongoDB
-mongoose
-  .connect(db, { useNewUrlParser: true, useFindAndModify: false })
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err))
+// MongoDB options
+const options = {
+  autoIndex: false, // Don't build indexes
+  reconnectTries: 30, // Retry up to 30 times
+  reconnectInterval: 500, // Reconnect every 500ms
+  poolSize: 10, // Maintain up to 10 socket connections
+  // If not connected, return errors immediately rather than waiting for reconnect
+  bufferMaxEntries: 0,
+  useNewUrlParser: true,
+  useFindAndModify: false
+}
+
+// MongoDB connection with retry on err
+const mongoConnectWithRetry = () => {
+  console.log('Connecting to Mongo...')
+  mongoose
+    .connect(db, options)
+    .then(() => {
+      console.log('MongoDB is connected')
+    })
+    .catch(err => {
+      console.log('MongoDB connection unsuccessful, retry after 5 seconds.')
+      console.log(err)
+      setTimeout(mongoConnectWithRetry, 5000)
+    })
+}
+
+// Connect to MongoDb with retry
+mongoConnectWithRetry()
 
 // Passport middleware
 app.use(passport.initialize())

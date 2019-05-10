@@ -24,7 +24,6 @@ const registerUser = async (req, res) => {
   try {
     // Validate registration fields
     const { errors, isValid } = validateUser.validateRegisterRequest(req.body)
-    console.log({ isValid })
     // Return errors if registration is invalid
     if (!isValid) {
       return res.status(400).json(errors)
@@ -43,12 +42,10 @@ const registerUser = async (req, res) => {
     })
     // Hash and salt user password
     const hashedPassword = await bcrypt.hash(req.body.password, 10)
-
     // Create new user portfolio instance
     const newPortfolio = await new Portfolio({
       name: `${req.body.name}'s Portfolio`
     }).save()
-
     // Create new user instance
     const newUser = await new User({
       name: req.body.name,
@@ -126,19 +123,19 @@ const updateUser = async (req, res) => {
       // Return any errors with 400 status
       return res.status(400).json(errors)
     }
-    // Update portfolio timestamp
+    // Update user timestamp
     const requestUser = {
       ...requestBody,
       lastUpdated: new Date().toISOString()
     }
-    // Find and update portfolio
-    const updatedPortfolio = Portfolio.findOneAndUpdate(
-      { user: req.params.user_id },
-      { $set: requestPortolio },
+    // Find and update User
+    const updatedUser = User.findByIdAndUpdate(
+      req.params.user_id,
+      { $set: requestUser },
       { new: true }
     )
-    // Return success with updated portfolio
-    return res.status(200).json(updatedPortfolio)
+    // Return success with updated user
+    return res.status(200).json(updatedUser)
   } catch (err) {
     // Return errors
     res.status(404).json(err)

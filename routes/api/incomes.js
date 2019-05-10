@@ -11,6 +11,44 @@ const Portfolio = require('../../models/Portfolio')
 const User = require('../../models/User')
 
 // ROUTE METHODS
+const createIncome = async (req, res) => {
+  const errors = {}
+  // Check Validation
+  if (!req.body.source) {
+    errors.name = 'Income source is required'
+    // Return any errors with 400 status
+    return res.status(400).json(errors)
+  }
+  try {
+    const existingIncome = await Income.findOne({ source: req.body.source })
+    if (existingIncome) {
+      errors.source = 'An income source already exists with that name.'
+      return res.status(400).json(errors)
+    }
+
+    // Get fields
+    const incomeFields = {}
+    incomeFields.portfolio = req.body.portfolioId
+    incomeFields.source = req.body.source
+    incomeFields.amount = req.body.amount
+
+    // Get user portfolio
+    const portfolio = await Portfolio.findById(req.body.portfolioId)
+
+    // Save new income
+    const newIncome = await new Income(incomeFields)
+
+    // Add income to portfolio
+    portfolio.incomes.push(newIncome)
+    // Save portfolio
+    portfolio.save()
+    // Return success with new income
+    return res.status(200).json(newIncome)
+  } catch (err) {
+    res.status(404).json(err)
+  }
+}
+
 const getPortfolioIncomes = async (req, res) => {
   const errors = {}
   try {
@@ -20,41 +58,6 @@ const getPortfolioIncomes = async (req, res) => {
       return res.status(404).json(errors)
     }
     res.status(200).json(incomes)
-  } catch (err) {
-    res.status(404).json(err)
-  }
-}
-
-const createPortfolioIncome = async (req, res) => {
-  const errors = {}
-  // Check Validation
-  if (!req.body.source) {
-    errors.name = 'Income source is required'
-    // Return any errors with 400 status
-    return res.status(400).json(errors)
-  }
-  try {
-    // Get fields
-    const incomeFields = {}
-    incomeFields.portfolio = req.params.portfolio_id
-    incomeFields.source = req.body.source
-    incomeFields.amount = req.body.amount
-
-    const existingIncome = await Income.findOne({ source: req.body.source })
-    if (existingIncome) {
-      errors.source = 'An income source already exists with that name.'
-      return res.status(400).json(errors)
-    }
-    // Save new income
-    const newIncome = await new Income(incomeFields).save()
-    // Get user portfolio
-    const portfolio = await Portfolio.findById(req.params.portfolio_id)
-    // Add income to portfolio
-    portfolio.incomes.push(newIncome)
-    // Save portfolio
-    portfolio.save()
-    // Return success with new income
-    return res.status(200).json(newIncome)
   } catch (err) {
     res.status(404).json(err)
   }
@@ -97,26 +100,24 @@ const deleteIncome = async (req, res) => {
   }
 }
 
-// @route   GET api/incomes/portfolio_id
-// @desc    Get incomes by portoflio id
+// @route   POST api/incomes/
+// @desc    Create a new income
+// @access  Private
+router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
+  createIncome(req, res)
+)
+
+// @route   GET api/incomes/:income_id
+// @desc    Get incomes by income id
 // @access  Private
 router.get(
-  '/:portfolio_id',
+  '/:income_id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => getPortfolioIncomes(req, res)
 )
 
-// @route   POST api/incomes/portfolio_id
-// @desc    Create a new income source and amount
-// @access  Private
-router.post(
-  '/:portfolio_id',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => createPortfolioIncome(req, res)
-)
-
-// @route   PUT api/incomes/portfolio_id
-// @desc    Update a new income source and amount
+// @route   PUT api/incomes/:income_id
+// @desc    Update an existign income
 // @access  Private
 router.put(
   '/:income_id',
@@ -124,8 +125,8 @@ router.put(
   (req, res) => updateIncome(req, res)
 )
 
-// @route   PUT api/incomes/portfolio_id
-// @desc    Update a new income source and amount
+// @route   PUT api/incomes/:income_id
+// @desc    Update an existing income
 // @access  Private
 router.delete(
   '/:income_id',

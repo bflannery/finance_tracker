@@ -13,26 +13,6 @@ const Portfolio = require('../../models/Portfolio')
 const User = require('../../models/User')
 
 // ROUTE METHODS
-const getPortfolio = async (req, res) => {
-  const errors = {}
-  try {
-    // Get inflated portfolio
-    const portfolio = await Portfolio.findOne({
-      user: req.params.user_id
-    }).populate('income')
-    // Check if portfolio exists
-    if (!portfolio) {
-      errors.noPortfolio = 'There is no portfolio for this user'
-      return res.status(404).json(errors)
-    }
-    // Return suceess with portfolio
-    res.status(200).json(portfolio)
-  } catch (err) {
-    // Return errors
-    res.status(404).json(err)
-  }
-}
-
 const createPortoflio = async (req, res) => {
   const errors = {}
   // Check validation
@@ -45,6 +25,8 @@ const createPortoflio = async (req, res) => {
     // Get require portfolio fields from request
     const portfolioFields = {}
     portfolioFields.name = req.body.name
+    userId = req.body.userId
+
     // Get portfolio
     const portfolio = await Portfolio.findOne({ name: req.body.name })
     // Check for existing portfolio with same name
@@ -54,10 +36,51 @@ const createPortoflio = async (req, res) => {
     }
     // Create new portoflio
     const newPortoflio = await new Portfolio(portfolioFields).save()
+    const user = await User.findById(userId)
+    user.portfolios = user.portfolios.concat([newPortoflio])
+    await user.save()
     return res.status(200).json(newPortoflio)
   } catch (err) {
     // Return errors
     return res.status(404).json(err)
+  }
+}
+
+const getPortfolios = async (req, res) => {
+  const errors = {}
+  try {
+    // Get all portfolios
+    const portfolios = await Portfolio.find().populate('income')
+    // Check if portfolios exist
+    if (portfolios.length === 0) {
+      errors.noPortfolio = 'There is no portfolios'
+      return res.status(404).json(errors)
+    }
+    // Return suceess with portfolio
+    res.status(200).json(portfolios)
+  } catch (err) {
+    // Return errors
+    res.status(404).json(err)
+  }
+}
+
+const getPortfolio = async (req, res) => {
+  const errors = {}
+  try {
+    // Get inflated portfolio
+    const portfolio = await Portfolio.findById(
+      req.params.portfolio_id
+    ).populate('income')
+    // Check if portfolio exists
+    if (!portfolio) {
+      errors.noPortfolio = 'There is no portfolio for this user'
+      return res.status(404).json(errors)
+    }
+    // Return suceess with portfolio
+    res.status(200).json(portfolio)
+  } catch (err) {
+    // Return errors
+    res.status(404).json(err)
   }
 }
 
@@ -72,8 +95,8 @@ const updatePortfolio = async (req, res) => {
       lastUpdated: new Date().toISOString()
     }
     // Find and update portfolio
-    const updatedPortfolio = Portfolio.findOneAndUpdate(
-      { user: req.params.user_id },
+    const updatedPortfolio = Portfolio.findByIdAndUpdate(
+      req.params.portfolio_id,
       { $set: requestPortolio },
       { new: true }
     )
@@ -98,28 +121,39 @@ const deletePortfolio = async (req, res) => {
 
 // ROUTES
 
-// @route   GET api/profile/user/:user_id
-// @desc    Get profile by user ID
-// @access  Public
-router.get('/:user_id', (req, res) => getPortfolio(req, res))
-
-// @route   POST api/portfolios/user_id
+// @route   POST api/portfolios/
 // @desc    Create a portfolio
 // @access  Private
 router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
   createPortoflio(req, res)
 )
 
-// @route   PUT api/portfolios/user_id
+// @route   GET api/portfolios/
+// @desc    Get all portfolio
+// @access  Private
+router.get('/', passport.authenticate('jwt', { session: false }), (req, res) =>
+  getPortfolios(req, res)
+)
+
+// @route   GET api/portfolios/:portfolio_id
+// @desc    Get portfolio by id
+// @access  Prive
+router.get(
+  '/:portfolio_id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => getPortfolio(req, res)
+)
+
+// @route   PUT api/portfolios/:portfolio_id
 // @desc    Update a portfolio
 // @access  Private
 router.put(
-  '/:user_id',
+  '/:portfolio_id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => updatePortfolio(req, res)
 )
 
-// @route   DELETE api/portfolio/user_id
+// @route   DELETE api/portfolio/:portfolio_id
 // @desc    Delete portfolio and user account
 // @access  Private
 router.delete(

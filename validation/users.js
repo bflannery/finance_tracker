@@ -27,7 +27,6 @@ const validateLoginRequest = data => {
 
 const validateRegisterRequest = data => {
   let errors = {}
-  console.log({ data })
 
   data.name = !isEmpty(data.name) ? data.name : ''
   data.email = !isEmpty(data.email) ? data.email : ''
