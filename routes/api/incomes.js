@@ -2,13 +2,10 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const passport = require('passport')
-
 // Load Income Model
 const Income = require('../../models/Income')
+// Load Portoflio Model
 const Portfolio = require('../../models/Portfolio')
-
-// Load User Model
-const User = require('../../models/User')
 
 // ROUTE METHODS
 const createIncome = async (req, res) => {
@@ -20,24 +17,15 @@ const createIncome = async (req, res) => {
     return res.status(400).json(errors)
   }
   try {
-    const existingIncome = await Income.findOne({ source: req.body.source })
-    if (existingIncome) {
-      errors.source = 'An income source already exists with that name.'
-      return res.status(400).json(errors)
-    }
-
     // Get fields
     const incomeFields = {}
     incomeFields.portfolio = req.body.portfolioId
     incomeFields.source = req.body.source
     incomeFields.amount = req.body.amount
-
-    // Get user portfolio
-    const portfolio = await Portfolio.findById(req.body.portfolioId)
-
     // Save new income
     const newIncome = await new Income(incomeFields)
-
+    // Get user portfolio
+    const portfolio = await Portfolio.findById(req.body.portfolioId)
     // Add income to portfolio
     portfolio.incomes.push(newIncome)
     // Save portfolio
@@ -49,15 +37,33 @@ const createIncome = async (req, res) => {
   }
 }
 
-const getPortfolioIncomes = async (req, res) => {
+const getIncomes = async (req, res) => {
   const errors = {}
   try {
-    const incomes = await Income.find({ portfolio: req.params.portfolio_id })
+    // Get all incomes
+    const incomes = await Income.find()
+    // Check if incomes exist
     if (incomes.length === 0) {
-      errors.noIncomes = 'There is no incomes for this portfolio'
+      errors.noIncomes = 'There is no incomes'
       return res.status(404).json(errors)
     }
+    // Return suceess with incomes
     res.status(200).json(incomes)
+  } catch (err) {
+    // Return errors
+    res.status(404).json(err)
+  }
+}
+
+const getIncome = async (req, res) => {
+  const errors = {}
+  try {
+    const income = await Income.findById(req.params.income_id)
+    if (!income) {
+      errors.noIncome = 'Income does not exist'
+      return res.status(404).json(errors)
+    }
+    res.status(200).json(income)
   } catch (err) {
     res.status(404).json(err)
   }
@@ -65,15 +71,10 @@ const getPortfolioIncomes = async (req, res) => {
 
 const updateIncome = async (req, res) => {
   try {
-    // Update income timestamp
-    const reqIncome = {
-      ...req.body,
-      lastUpdated: new Date().toISOString()
-    }
     // Update income instance
-    const updatedIncome = await Income.findOneAndUpdate(
-      { _id: req.params.income_id },
-      { $set: reqIncome },
+    const updatedIncome = await Income.findByIdAndUpdate(
+      req.params.income_id,
+      { $set: req.body },
       { new: true }
     )
     // Return sucess with newly updated income
@@ -90,7 +91,7 @@ const deleteIncome = async (req, res) => {
     // Get Portoflio
     const portfolio = await Portfolio.findById(deletedIncome.portfolio)
     // Remove income from portoflio incomes array
-    portfolio.incomes = portfolio.incomes.filter(id => id === deleteIncome._id)
+    portfolio.incomes = portfolio.incomes.id(deleteIncome._id).remove()
     // Save portfolio
     await portfolio.save()
     // Return success with deleted income
@@ -107,17 +108,24 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
   createIncome(req, res)
 )
 
+// @route   GET api/incomes/
+// @desc    Get incomes
+// @access  Private
+router.get('/', passport.authenticate('jwt', { session: false }), (req, res) =>
+  getIncomes(req, res)
+)
+
 // @route   GET api/incomes/:income_id
-// @desc    Get incomes by income id
+// @desc    Get income by income id
 // @access  Private
 router.get(
   '/:income_id',
   passport.authenticate('jwt', { session: false }),
-  (req, res) => getPortfolioIncomes(req, res)
+  (req, res) => getIncome(req, res)
 )
 
 // @route   PUT api/incomes/:income_id
-// @desc    Update an existign income
+// @desc    Update an existing income
 // @access  Private
 router.put(
   '/:income_id',
@@ -125,8 +133,8 @@ router.put(
   (req, res) => updateIncome(req, res)
 )
 
-// @route   PUT api/incomes/:income_id
-// @desc    Update an existing income
+// @route   DELETE api/incomes/:income_id
+// @desc    Delete an existing income
 // @access  Private
 router.delete(
   '/:income_id',

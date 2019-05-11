@@ -18,12 +18,10 @@ export const setCurrentUser = decoded => ({
 })
 
 export const registerUser = (userData, history) => async dispatch => {
-  const { error, response } = await asyncWrapper(
+  const { error } = await asyncWrapper(
     axios.post('/api/users/register', userData)
   )
   if (error) return dispatch(setErrorsAction(error))
-  console.log({ response })
-  // return history.push('/login')
 }
 
 export const loginUser = userData => async dispatch => {

@@ -93,7 +93,8 @@ const loginUser = async (req, res) => {
     const userPayload = {
       id: user.id,
       name: user.name,
-      avatar: user.avatar
+      avatar: user.avatar,
+      portfolios: user.portfolios
     }
     // Get JWT
     const token = await jwt.sign(userPayload, keys.secretKey, {

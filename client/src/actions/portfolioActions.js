@@ -33,10 +33,10 @@ export const setErrorsAction = error => ({
 })
 
 // Get current portfolio
-export const getCurrentPortfolio = id => async dispatch => {
+export const getCurrentPortfolio = portfolioId => async dispatch => {
   dispatch(setPortfolioLoading())
   const { error, response } = await asyncWrapper(
-    axios.get(`/api/portfolios/${id}`)
+    axios.get(`/api/portfolios/${portfolioId}`)
   )
   if (!error) return dispatch(setCurrentPortfolio(response.data))
   return dispatch(setErrorsAction(error.response.data))
@@ -45,7 +45,7 @@ export const getCurrentPortfolio = id => async dispatch => {
 // Create portfolio
 export const createPortfolio = (portfolioData, history) => async dispatch => {
   const { error } = await asyncWrapper(
-    axios.post('/api/portfolio', portfolioData)
+    axios.post('/api/portfolios/', portfolioData)
   )
   if (!error) return history.push('/dashboard')
   return dispatch(setErrorsAction(error.response.data))

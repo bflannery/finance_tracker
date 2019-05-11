@@ -11,7 +11,6 @@ import { setCurrentUser, logoutUser } from './actions/authActions'
 
 import PrivateRoute from './components/common/PrivateRoute'
 import Navbar from './components/layout/Navbar'
-import Landing from './components/layout/Landing'
 import Footer from './components/layout/Footer'
 import Register from './components/auth/Register'
 import Login from './components/auth/Login'
@@ -45,10 +44,11 @@ class App extends Component {
         <Router>
           <div className="App">
             <Navbar />
-            <Route exact path="/" component={Landing} />
+            <Route exact path="/" component={Login} />
             <div className="container">
               <Route exact path="/register" component={Register} />
               <Route exact path="/login" component={Login} />
+
               <Switch>
                 <PrivateRoute
                   exact

@@ -22,23 +22,22 @@ const createPortoflio = async (req, res) => {
     return res.status(400).json(errors)
   }
   try {
-    // Get require portfolio fields from request
-    const portfolioFields = {}
-    portfolioFields.name = req.body.name
-    userId = req.body.userId
-
     // Get portfolio
     const portfolio = await Portfolio.findOne({ name: req.body.name })
     // Check for existing portfolio with same name
     if (portfolio) {
-      errors.handle = 'A portfolio already exists with that name.'
+      errors.name = 'A portfolio already exists with that name.'
       return res.status(400).json(errors)
     }
     // Create new portoflio
-    const newPortoflio = await new Portfolio(portfolioFields).save()
-    const user = await User.findById(userId)
-    user.portfolios = user.portfolios.concat([newPortoflio])
+    const newPortoflio = await new Portfolio({ name: req.body.name }).save()
+    // Get User
+    const user = await User.findById(req.body.userId)
+    // Add new portoflio to existing user portfolios
+    user.portfolios = user.portfolios.push(newPortoflio)
+    // Save User
     await user.save()
+    // Return success with new portfolio
     return res.status(200).json(newPortoflio)
   } catch (err) {
     // Return errors
@@ -85,19 +84,11 @@ const getPortfolio = async (req, res) => {
 }
 
 const updatePortfolio = async (req, res) => {
-  const errors = {}
   try {
-    const requestBody = req.body
-
-    // Update portfolio timestamp
-    const requestPortolio = {
-      ...requestBody,
-      lastUpdated: new Date().toISOString()
-    }
     // Find and update portfolio
     const updatedPortfolio = Portfolio.findByIdAndUpdate(
       req.params.portfolio_id,
-      { $set: requestPortolio },
+      { $set: req.body },
       { new: true }
     )
     // Return success with updated portfolio

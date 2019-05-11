@@ -3,53 +3,32 @@ const router = express.Router()
 const mongoose = require('mongoose')
 const passport = require('passport')
 
-// Load Income Model
+// Load Expense Model
 const Expense = require('../../models/Expense')
+// Load Portfolio Model
 const Portfolio = require('../../models/Portfolio')
 
-// Load User Model
-const User = require('../../models/User')
-
 // ROUTE METHODS
-const getPortfolioExpenses = async (req, res) => {
-  const errors = {}
-  try {
-    const expenses = await Expense.find({ portfolio: req.params.portfolio_id })
-    if (expenses.length === 0) {
-      errors.noExpenses = 'There is no expenses for this portfolio'
-      return res.status(404).json(errors)
-    }
-    res.status(200).json(expenses)
-  } catch (err) {
-    res.status(404).json(err)
-  }
-}
-
-const createPortfolioExpense = async (req, res) => {
+const createExpense = async (req, res) => {
   const errors = {}
   // Check Validation
   if (!req.body.source) {
-    errors.name = 'Expense source name is required'
+    errors.name = 'Expense source is required'
     // Return any errors with 400 status
     return res.status(400).json(errors)
   }
   try {
-    // Get fields
+    // Get expense fields
     const expenseFields = {}
-    expenseFields.portfolio = req.params.portfolio_id
+    expenseFields.portfolio = req.body.portfolioId
     expenseFields.source = req.body.source
     expenseFields.amount = req.body.amount
 
-    const existingExpense = await Expense.findOne({ source: req.body.source })
-    if (existingExpense) {
-      errors.source = 'An Expense source already exists with that name.'
-      return res.status(400).json(errors)
-    }
     // Save new expense
-    const newExpense = await new Expense(expenseFields).save()
+    const newExpense = await new Expense(expenseFields)
     // Get user portfolio
-    const portfolio = await Portfolio.findById(req.params.portfolio_id)
-    // Add expense to portfolio
+    const portfolio = await Portfolio.findById(req.body.portfolioId)
+    // Add income to portfolio
     portfolio.expenses.push(newExpense)
     // Save portfolio
     portfolio.save()
@@ -60,27 +39,54 @@ const createPortfolioExpense = async (req, res) => {
   }
 }
 
+const getExpenses = async (req, res) => {
+  const errors = {}
+  try {
+    // Get all expenses
+    const expenses = await Expense.find()
+    // Check if expenses exist
+    if (expenses.length === 0) {
+      errors.noExepenses = 'There is no expenses'
+      return res.status(404).json(errors)
+    }
+    // Return suceess with incomes
+    res.status(200).json(incomes)
+  } catch (err) {
+    // Return errors
+    res.status(404).json(err)
+  }
+}
+
+const getExpense = async (req, res) => {
+  const errors = {}
+  try {
+    const expense = await Expense.findById(req.params.expense_id)
+    if (!expense) {
+      errors.noExpense = 'Expense does not exist'
+      return res.status(404).json(errors)
+    }
+    res.status(200).json(expense)
+  } catch (err) {
+    res.status(404).json(err)
+  }
+}
+
 const updateExpense = async (req, res) => {
   try {
-    // Update expense timestamp
-    const reqExpense = {
-      ...req.body,
-      lastUpdated: new Date().toISOString()
-    }
     // Update expense instance
-    const updatedExpense = await Expense.findOneAndUpdate(
-      { _id: req.params.expense_id },
-      { $set: reqExpense },
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      req.params.expense_id,
+      { $set: req.body },
       { new: true }
     )
-    // Return sucess with newly updated income
+    // Return sucess with newly updated expense
     res.status(200).json(updatedExpense)
   } catch (err) {
     res.status(404).json(err)
   }
 }
 
-const deleteIncome = async (req, res) => {
+const deleteExpense = async (req, res) => {
   try {
     // Delete expense
     const deletedExpense = await Expense.findByIdAndRemove(
@@ -89,9 +95,7 @@ const deleteIncome = async (req, res) => {
     // Get Portoflio
     const portfolio = await Portfolio.findById(deletedExpense.portfolio)
     // Remove expense from portoflio expenses array
-    portfolio.expenses = portfolio.expenses.filter(
-      id => id === deletedExpense._id
-    )
+    portfolio.incomes = portfolio.incomes.filter(id => id === deleteIncome._id)
     // Save portfolio
     await portfolio.save()
     // Return success with deleted expense
@@ -101,25 +105,30 @@ const deleteIncome = async (req, res) => {
   }
 }
 
-// @route   GET api/expenses/portfolio_id
-// @desc    Get expenses by portoflio id
+// @route   POST api/expenses/
+// @desc    Create a new expense
+// @access  Private
+router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
+  createExpense(req, res)
+)
+
+// @route   GET api/expenses/
+// @desc    Get expenses
+// @access  Private
+router.get('/', passport.authenticate('jwt', { session: false }), (req, res) =>
+  getExpenses(req, res)
+)
+
+// @route   GET api/expenses/:expense_id
+// @desc    Get expense by expense id
 // @access  Private
 router.get(
-  '/:portfolio_id',
+  '/:expense_id',
   passport.authenticate('jwt', { session: false }),
-  (req, res) => getPortfolioExpenses(req, res)
+  (req, res) => getExpense(req, res)
 )
 
-// @route   POST api/expenses/portfolio_id
-// @desc    Create a new expense and add it to user portfolio
-// @access  Private
-router.post(
-  '/:portfolio_id',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => createPortfolioExpense(req, res)
-)
-
-// @route   PUT api/expenses/portfolio_id
+// @route   PUT api/expenses/:expense_id
 // @desc    Update an existing expense
 // @access  Private
 router.put(
@@ -128,11 +137,11 @@ router.put(
   (req, res) => updateExpense(req, res)
 )
 
-// @route   DELETE api/expenses/portfolio_id
-// @desc    delete an expense and remove it from user portfolio
+// @route   DELETE api/expenses/:expense_id
+// @desc    Delete an existing expense
 // @access  Private
 router.delete(
-  '/:expenses_id',
+  '/:expense_id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => deleteExpense(req, res)
 )

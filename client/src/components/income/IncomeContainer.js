@@ -1,10 +1,7 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
-import { isEmpty } from 'lodash'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { getCurrentPortfolio } from '../../actions/portfolioActions'
-import portfoliosReducer from '../../reducers/portfoliosReducer'
 import TextFieldGroup from '../common/TextFieldGroup'
 
 class SourceContainer extends Component {
