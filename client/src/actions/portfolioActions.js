@@ -6,7 +6,9 @@ import {
   SET_PORTFOLIO,
   PORTFOLIO_LOADING,
   SET_ERRORS,
-  SET_CURRENT_USER
+  SET_CURRENT_USER,
+  SET_LAST_SAVED_INCOME,
+  GET_PORTFOLIO_SUCCESS
 } from './types'
 
 export const setCurrentUser = (user = {}) => ({
@@ -32,13 +34,26 @@ export const setErrorsAction = error => ({
   payload: error
 })
 
+export const setLastSavedIncome = (lastSavedIncome = {}) => ({
+  type: SET_LAST_SAVED_INCOME,
+  payload: { lastSavedIncome }
+})
+
+export const getPortfolioSuccess = (portfolio = {}) => ({
+  type: GET_PORTFOLIO_SUCCESS,
+  payload: portfolio
+})
+
 // Get current portfolio
 export const getCurrentPortfolio = portfolioId => async dispatch => {
   dispatch(setPortfolioLoading())
   const { error, response } = await asyncWrapper(
     axios.get(`/api/portfolios/${portfolioId}`)
   )
-  if (!error) return dispatch(setCurrentPortfolio(response.data))
+  if (!error) {
+    dispatch(getPortfolioSuccess(response.data))
+    return dispatch(setCurrentPortfolio(response.data))
+  }
   return dispatch(setErrorsAction(error.response.data))
 }
 
@@ -61,11 +76,11 @@ export const deleteAccount = () => async dispatch => {
 }
 
 // Add Income
-export const addIncome = (incomeData, history) => async dispatch => {
-  const { error } = await asyncWrapper(
-    axios.post('/api/portfolio/incomes', incomeData)
+export const addIncome = incomeData => async dispatch => {
+  const { error, response } = await asyncWrapper(
+    axios.post('/api/incomes', incomeData)
   )
-  if (!error) return history.push('/dashboard')
+  if (!error) return dispatch(setLastSavedIncome(response.data))
   return dispatch(setErrorsAction(error.response.data))
 }
 
@@ -74,16 +89,16 @@ export const deleteIncome = id => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.delete(`/api/portfolio/incomes/${id}`)
   )
-  if (!error) return dispatch(setCurrentPortfolio(response.data))
+  if (!error) return dispatch(setLastSavedIncome(response.data))
   return dispatch(setErrorsAction(error.response.data))
 }
 
 // Add Expense
-export const addExpense = (expenseData, history) => async dispatch => {
-  const { error } = await asyncWrapper(
-    axios.post('/api/portfolio/expenses', expenseData)
+export const addExpense = expenseData => async dispatch => {
+  const { error, response } = await asyncWrapper(
+    axios.post('/api/expenses', expenseData)
   )
-  if (!error) return history.push('/dashboard')
+  if (!error) return dispatch(setCurrentPortfolio(response.data))
   return dispatch(setErrorsAction(error.response.data))
 }
 

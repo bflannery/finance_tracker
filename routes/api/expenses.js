@@ -12,8 +12,8 @@ const Portfolio = require('../../models/Portfolio')
 const createExpense = async (req, res) => {
   const errors = {}
   // Check Validation
-  if (!req.body.source) {
-    errors.name = 'Expense source is required'
+  if (!req.body.name) {
+    errors.name = 'Expense name is required'
     // Return any errors with 400 status
     return res.status(400).json(errors)
   }

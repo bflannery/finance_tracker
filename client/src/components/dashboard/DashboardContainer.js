@@ -1,8 +1,12 @@
 import React, { Component } from 'react'
-// import { isEmpty } from 'lodash'
 import PropTypes from 'prop-types'
+import { omit } from 'lodash'
 import { connect } from 'react-redux'
-import { getCurrentPortfolio } from '../../actions/portfolioActions'
+import {
+  getCurrentPortfolio,
+  addExpense,
+  addIncome
+} from '../../actions/portfolioActions'
 import TextFieldGroup from '../common/TextFieldGroup'
 
 class Dashboard extends Component {
@@ -38,10 +42,14 @@ class Dashboard extends Component {
 
   onSubmit(e) {
     e.preventDefault()
-
-    // const profileData = _.omit(this.state, ['displaySocialInputs', 'errors'])
-    // console.log({ profileData })
-    // this.props.createProfile(profileData, this.props.history)
+    const { addExpense, addIncome, portfolio } = this.props
+    const action = this.state.type === 'expense' ? addExpense : addIncome
+    const ommitedState = omit(this.state, ['type', 'errors'])
+    const payload = {
+      ...ommitedState,
+      portfolioId: portfolio._id
+    }
+    return action(payload)
   }
 
   render() {
@@ -115,7 +123,7 @@ class Dashboard extends Component {
                     </div>
                     <TextFieldGroup
                       placeholder="* Name"
-                      name="source"
+                      name="name"
                       value={this.state.name}
                       onChange={this.onChange}
                       error={errors.name}
@@ -156,6 +164,8 @@ const mapStateToProps = state => ({
 export default connect(
   mapStateToProps,
   {
+    addExpense,
+    addIncome,
     getCurrentPortfolio
   }
 )(Dashboard)

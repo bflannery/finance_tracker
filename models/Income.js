@@ -8,7 +8,7 @@ const IncomeSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Portfolio'
     },
-    source: {
+    name: {
       type: String,
       required: true
     },

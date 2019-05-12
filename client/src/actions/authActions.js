@@ -3,7 +3,7 @@ import jwt_decode from 'jwt-decode'
 
 import setAuthToken from '../utils/setAuthToken'
 import asyncWrapper from '../utils/asyncWrapper'
-import { SET_ERRORS, SET_CURRENT_USER } from './types'
+import { GET_USER_SUCCESS, SET_ERRORS, SET_CURRENT_USER } from './types'
 
 // Set Errors
 export const setErrorsAction = error => ({
@@ -15,6 +15,11 @@ export const setErrorsAction = error => ({
 export const setCurrentUser = decoded => ({
   type: SET_CURRENT_USER,
   payload: decoded
+})
+
+export const getUserSucess = user => ({
+  type: GET_USER_SUCCESS,
+  payload: user
 })
 
 export const registerUser = (userData, history) => async dispatch => {
@@ -35,9 +40,10 @@ export const loginUser = userData => async dispatch => {
     // Set token to Auth header
     setAuthToken(token)
     // Decode token to get user data
-    const decoded = jwt_decode(token)
+    const decodedUser = jwt_decode(token)
     // Set current user
-    return dispatch(setCurrentUser(decoded))
+    dispatch(getUserSucess(decodedUser))
+    return dispatch(setCurrentUser(decodedUser))
   }
   return dispatch(setErrorsAction(error))
 }

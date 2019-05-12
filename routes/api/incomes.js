@@ -11,8 +11,8 @@ const Portfolio = require('../../models/Portfolio')
 const createIncome = async (req, res) => {
   const errors = {}
   // Check Validation
-  if (!req.body.source) {
-    errors.name = 'Income source is required'
+  if (!req.body.name) {
+    errors.name = 'Income name is required'
     // Return any errors with 400 status
     return res.status(400).json(errors)
   }
@@ -20,10 +20,10 @@ const createIncome = async (req, res) => {
     // Get fields
     const incomeFields = {}
     incomeFields.portfolio = req.body.portfolioId
-    incomeFields.source = req.body.source
+    incomeFields.name = req.body.name
     incomeFields.amount = req.body.amount
     // Save new income
-    const newIncome = await new Income(incomeFields)
+    const newIncome = await new Income(incomeFields).save()
     // Get user portfolio
     const portfolio = await Portfolio.findById(req.body.portfolioId)
     // Add income to portfolio
