@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash'
-import { SET_CURRENT_USER } from '../actions/types'
+import { LOG_OUT, SET_CURRENT_USER } from '../actions/types'
 
 const initialState = {
   isAuthenticated: false,
@@ -15,6 +15,9 @@ const authReducer = (state = initialState, action) => {
         isAuthenticated: !isEmpty(payload),
         user: payload
       }
+    }
+    case LOG_OUT: {
+      return {}
     }
     default:
       return state

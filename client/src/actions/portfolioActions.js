@@ -3,30 +3,27 @@ import asyncWrapper from '../utils/asyncWrapper'
 
 import {
   CLEAR_CURRENT_PORTFOLIO,
-  SET_PORTFOLIO,
+  INCOME_POST_SUCCESS,
+  PORTFOLIO_GET_SUCCESS,
   PORTFOLIO_LOADING,
   SET_ERRORS,
   SET_CURRENT_USER,
   SET_LAST_SAVED_INCOME,
-  GET_PORTFOLIO_SUCCESS
+  SET_PORTFOLIO
 } from './types'
-
-export const setCurrentUser = (user = {}) => ({
-  type: SET_CURRENT_USER,
-  payload: user
-})
-
-export const setPortfolioLoading = () => ({
-  type: PORTFOLIO_LOADING
-})
-
-export const setCurrentPortfolio = (portfolio = {}) => ({
-  type: SET_PORTFOLIO,
-  payload: portfolio
-})
 
 export const clearCurrentPortfolio = () => ({
   type: CLEAR_CURRENT_PORTFOLIO
+})
+
+export const incomePostSucessAction = (income = {}) => ({
+  type: INCOME_POST_SUCCESS,
+  payload: income
+})
+
+export const portfolioGetSuccess = (portfolio = {}) => ({
+  type: PORTFOLIO_GET_SUCCESS,
+  payload: portfolio
 })
 
 export const setErrorsAction = error => ({
@@ -39,9 +36,18 @@ export const setLastSavedIncome = (lastSavedIncome = {}) => ({
   payload: { lastSavedIncome }
 })
 
-export const getPortfolioSuccess = (portfolio = {}) => ({
-  type: GET_PORTFOLIO_SUCCESS,
+export const setPortfolioLoading = () => ({
+  type: PORTFOLIO_LOADING
+})
+
+export const setCurrentPortfolio = (portfolio = {}) => ({
+  type: SET_PORTFOLIO,
   payload: portfolio
+})
+
+export const setCurrentUser = (user = {}) => ({
+  type: SET_CURRENT_USER,
+  payload: user
 })
 
 // Get current portfolio
@@ -51,7 +57,7 @@ export const getCurrentPortfolio = portfolioId => async dispatch => {
     axios.get(`/api/portfolios/${portfolioId}`)
   )
   if (!error) {
-    dispatch(getPortfolioSuccess(response.data))
+    dispatch(portfolioGetSuccess(response.data))
     return dispatch(setCurrentPortfolio(response.data))
   }
   return dispatch(setErrorsAction(error.response.data))
@@ -80,7 +86,10 @@ export const addIncome = incomeData => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.post('/api/incomes', incomeData)
   )
-  if (!error) return dispatch(setLastSavedIncome(response.data))
+  if (!error) {
+    dispatch(incomePostSucessAction(response.data))
+    return dispatch(setLastSavedIncome(response.data))
+  }
   return dispatch(setErrorsAction(error.response.data))
 }
 

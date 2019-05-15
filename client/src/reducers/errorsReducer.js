@@ -1,4 +1,4 @@
-import { SET_ERRORS, CLEAR_ERRORS } from '../actions/types'
+import { SET_ERRORS, CLEAR_ERRORS, LOG_OUT } from '../actions/types'
 
 const initialState = {}
 
@@ -8,6 +8,9 @@ const authReducer = (state = initialState, action) => {
       return action.payload
     case CLEAR_ERRORS:
       return initialState
+    case LOG_OUT: {
+      return {}
+    }
     default:
       return state
   }

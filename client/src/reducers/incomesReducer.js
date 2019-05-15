@@ -1,8 +1,7 @@
-import { SET_PORTFOLIO, SET_LAST_SAVED_INCOME } from '../actions/types'
+import { SET_LAST_SAVED_INCOME, LOG_OUT } from '../actions/types'
 
 const initialState = {
-  lastSavedIncome: {},
-  incomes: []
+  lastSavedIncome: {}
 }
 
 export const incomesReducer = (state = initialState, action) => {
@@ -10,14 +9,11 @@ export const incomesReducer = (state = initialState, action) => {
     case SET_LAST_SAVED_INCOME:
       return {
         ...state,
-        lastSavedIncome: action.payload,
-        incomes: state.incomes.concat([action.payload])
+        ...action.payload
       }
-    case SET_PORTFOLIO:
-      return {
-        ...state,
-        incomes: action.payload.incomes
-      }
+    case LOG_OUT: {
+      return {}
+    }
     default:
       return state
   }

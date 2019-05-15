@@ -9,16 +9,18 @@ import {
 } from '../../actions/portfolioActions'
 import TextFieldGroup from '../common/TextFieldGroup'
 
+const DEFAULT_STATE = {
+  type: 'income',
+  name: '',
+  amount: '',
+  errors: {}
+}
+
 class Dashboard extends Component {
   constructor(props) {
     super(props)
 
-    this.state = {
-      type: 'income',
-      name: '',
-      amount: '',
-      errors: {}
-    }
+    this.state = DEFAULT_STATE
 
     this.onChange = this.onChange.bind(this)
     this.onSubmit = this.onSubmit.bind(this)
@@ -49,7 +51,8 @@ class Dashboard extends Component {
       ...ommitedState,
       portfolioId: portfolio._id
     }
-    return action(payload)
+    action(payload)
+    this.setState(DEFAULT_STATE)
   }
 
   render() {

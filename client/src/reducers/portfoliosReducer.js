@@ -5,11 +5,8 @@ import {
   CLEAR_CURRENT_PORTFOLIO
 } from '../actions/types'
 
-
-
 const initialState = {
   portfolio: null,
-  portfolios: null,
   loading: false
 }
 

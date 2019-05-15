@@ -3,7 +3,7 @@ import jwt_decode from 'jwt-decode'
 
 import setAuthToken from '../utils/setAuthToken'
 import asyncWrapper from '../utils/asyncWrapper'
-import { GET_USER_SUCCESS, SET_ERRORS, SET_CURRENT_USER } from './types'
+import { SET_ERRORS, SET_CURRENT_USER, USER_GET_SUCCESS } from './types'
 
 // Set Errors
 export const setErrorsAction = error => ({
@@ -18,7 +18,7 @@ export const setCurrentUser = decoded => ({
 })
 
 export const getUserSucess = user => ({
-  type: GET_USER_SUCCESS,
+  type: USER_GET_SUCCESS,
   payload: user
 })
 
