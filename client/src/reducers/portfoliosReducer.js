@@ -1,12 +1,11 @@
 import {
-  SET_PORTFOLIOS,
   SET_PORTFOLIO,
   PORTFOLIO_LOADING,
-  CLEAR_CURRENT_PORTFOLIO
+  CLEAR_SELECTED_PORTFOLIO
 } from '../actions/types'
 
 const initialState = {
-  portfolio: null,
+  selectedPortfolio: {},
   loading: false
 }
 
@@ -20,19 +19,13 @@ export const portfoliosReducer = (state = initialState, action) => {
     case SET_PORTFOLIO:
       return {
         ...state,
-        portfolio: action.payload,
+        selectedPortfolio: action.payload,
         loading: false
       }
-    case CLEAR_CURRENT_PORTFOLIO:
+    case CLEAR_SELECTED_PORTFOLIO:
       return {
         ...state,
-        portfolio: null
-      }
-    case SET_PORTFOLIOS:
-      return {
-        ...state,
-        portfolios: action.payload,
-        loading: false
+        selectedPortfolio: null
       }
     default:
       return state

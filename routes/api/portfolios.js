@@ -67,12 +67,9 @@ const getPortfolio = async (req, res) => {
   const errors = {}
   try {
     // Get inflated portfolio
-    const portfolio = await Portfolio.findById(
-      req.params.portfolio_id
-    ).populate({
-      path: 'incomes',
-      populate: { path: 'incomes' }
-    })
+    const portfolio = await Portfolio.findById(req.params.portfolio_id)
+      .populate('incomes')
+      .populate('expenses')
     // Check if portfolio exists
     if (!portfolio) {
       errors.noPortfolio = 'There is no portfolio for this user'

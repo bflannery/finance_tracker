@@ -1,12 +1,18 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { omit } from 'lodash'
+import _ from 'lodash'
 import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
 import {
-  getCurrentPortfolio,
-  addExpense,
-  addIncome
+  getCurrentPortfolioAction,
+  addExpenseAction,
+  addIncomeAction
 } from '../../actions/portfolioActions'
+import {
+  getCurrentUserSelector,
+  getSelectedPortfolioSelector,
+  getErrorsSelector
+} from '../../reducers/index'
 import TextFieldGroup from '../common/TextFieldGroup'
 
 const DEFAULT_STATE = {
@@ -44,19 +50,19 @@ class Dashboard extends Component {
 
   onSubmit(e) {
     e.preventDefault()
-    const { addExpense, addIncome, portfolio } = this.props
+    const { addExpense, addIncome, selectedPortfolio } = this.props
     const action = this.state.type === 'expense' ? addExpense : addIncome
-    const ommitedState = omit(this.state, ['type', 'errors'])
+    const ommitedState = _.omit(this.state, ['type', 'errors'])
     const payload = {
       ...ommitedState,
-      portfolioId: portfolio._id
+      portfolioId: selectedPortfolio._id
     }
     action(payload)
     this.setState(DEFAULT_STATE)
   }
 
   render() {
-    const { errors } = this.props
+    const { errors, selectedPortfolio } = this.props
     return (
       <div className="add-income">
         <div className="container">
@@ -68,36 +74,22 @@ class Dashboard extends Component {
                 </div>
                 <div className="card-body p-0">
                   <ul className="list-group list-group-flush">
-                    <li className="list-group-item col-md-12">
-                      <div className="row">
-                        <div className="col-md-10">
-                          <span>Cras justo odio</span>
-                        </div>
-                        <div className="col-md-2">
-                          <span>$3000</span>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row">
-                        <div className="col-md-10">
-                          <span>Cras justo odio</span>
-                        </div>
-                        <div className="col-md-2">
-                          <span>$6000</span>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row">
-                        <div className="col-md-10">
-                          <span>Cras justo odio</span>
-                        </div>
-                        <div className="col-md-2">
-                          <span>$9000</span>
-                        </div>
-                      </div>
-                    </li>
+                    {selectedPortfolio.incomes &&
+                      _.map(selectedPortfolio.incomes, income => (
+                        <li
+                          key={income._id}
+                          className="list-group-item col-md-12"
+                        >
+                          <div className="row">
+                            <div className="col-md-10">
+                              <span>{income.name}</span>
+                            </div>
+                            <div className="col-md-2">
+                              <span>$3000</span>
+                            </div>
+                          </div>
+                        </li>
+                      ))}
                   </ul>
                 </div>
               </div>
@@ -153,22 +145,34 @@ class Dashboard extends Component {
     )
   }
 }
-
 Dashboard.propTypes = {
   user: PropTypes.object.isRequired
 }
 
+export const getPortfolioEntities = createSelector(
+  getSelectedPortfolioSelector,
+  portfolio => {
+    const { incomes, expenses } = portfolio
+    console.log({ portfolio })
+    const mergedEntites = { ...incomes, ...expenses }
+    console.log({ mergedEntites })
+
+    return portfolio
+  }
+)
+
 const mapStateToProps = state => ({
-  user: state.auth.user,
-  portfolio: state.portfolios.portfolio,
-  errors: state.errors
+  user: getCurrentUserSelector(state),
+  portfolioEntities: getPortfolioEntities(state),
+  selectedPortfolio: getSelectedPortfolioSelector(state),
+  errors: getErrorsSelector(state)
 })
 
 export default connect(
   mapStateToProps,
   {
-    addExpense,
-    addIncome,
-    getCurrentPortfolio
+    addExpense: addExpenseAction,
+    addIncome: addIncomeAction,
+    getCurrentPortfolio: getCurrentPortfolioAction
   }
 )(Dashboard)

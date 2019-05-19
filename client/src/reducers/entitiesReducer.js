@@ -1,6 +1,7 @@
 import { normalize, schema } from 'normalizr'
 import _ from 'lodash'
 import {
+  EXPENSE_POST_SUCCESS,
   INCOME_POST_SUCCESS,
   PORTFOLIO_GET_SUCCESS,
   USER_GET_SUCCESS,
@@ -11,16 +12,25 @@ import {
 const incomeEntity = new schema.Entity('incomes', {}, { idAttribute: '_id' })
 const incomeSchema = { incomes: [incomeEntity] }
 
+// Expense Entity and Schema
+const expenseEntity = new schema.Entity('expenses', {}, { idAttribute: '_id' })
+const expenseSchema = { expenses: [incomeEntity] }
+
 // Portfolio Entity and Schema
-const portfolioEntity = new schema.Entity('portfolios', incomeSchema, {
-  idAttribute: '_id'
-})
+const portfolioEntity = new schema.Entity(
+  'portfolios',
+  { ...incomeSchema, ...expenseSchema },
+  {
+    idAttribute: '_id'
+  }
+)
 const portfolioSchema = { portfolios: [portfolioEntity] }
 
 // User Entity
 const userEntity = new schema.Entity('users', portfolioSchema, 'id')
 
 const initialState = {
+  expenses: {},
   incomes: {},
   portfolios: {},
   users: {}
@@ -53,6 +63,12 @@ export const entitiesRedcuer = (state = initialState, action) => {
       }
     case INCOME_POST_SUCCESS:
       mergedEntitiesState = getMergedEntityState(state, payload, incomeEntity)
+      return {
+        ...state,
+        ...mergedEntitiesState
+      }
+    case EXPENSE_POST_SUCCESS:
+      mergedEntitiesState = getMergedEntityState(state, payload, expenseEntity)
       return {
         ...state,
         ...mergedEntitiesState

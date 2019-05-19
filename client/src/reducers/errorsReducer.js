@@ -2,7 +2,7 @@ import { SET_ERRORS, CLEAR_ERRORS, LOG_OUT } from '../actions/types'
 
 const initialState = {}
 
-const authReducer = (state = initialState, action) => {
+const errorsReducer = (state = initialState, action) => {
   switch (action.type) {
     case SET_ERRORS:
       return action.payload
@@ -16,4 +16,4 @@ const authReducer = (state = initialState, action) => {
   }
 }
 
-export default authReducer
+export default errorsReducer

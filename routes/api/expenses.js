@@ -21,11 +21,11 @@ const createExpense = async (req, res) => {
     // Get expense fields
     const expenseFields = {}
     expenseFields.portfolio = req.body.portfolioId
-    expenseFields.source = req.body.source
+    expenseFields.name = req.body.name
     expenseFields.amount = req.body.amount
 
     // Save new expense
-    const newExpense = await new Expense(expenseFields)
+    const newExpense = await new Expense(expenseFields).save()
     // Get user portfolio
     const portfolio = await Portfolio.findById(req.body.portfolioId)
     // Add income to portfolio

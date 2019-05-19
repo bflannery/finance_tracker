@@ -2,18 +2,20 @@ import axios from 'axios'
 import asyncWrapper from '../utils/asyncWrapper'
 
 import {
-  CLEAR_CURRENT_PORTFOLIO,
+  CLEAR_SELECTED_PORTFOLIO,
+  EXPENSE_POST_SUCCESS,
   INCOME_POST_SUCCESS,
   PORTFOLIO_GET_SUCCESS,
   PORTFOLIO_LOADING,
   SET_ERRORS,
   SET_CURRENT_USER,
   SET_LAST_SAVED_INCOME,
+  SET_LAST_SAVED_EXPENSE,
   SET_PORTFOLIO
 } from './types'
 
 export const clearCurrentPortfolio = () => ({
-  type: CLEAR_CURRENT_PORTFOLIO
+  type: CLEAR_SELECTED_PORTFOLIO
 })
 
 export const incomePostSucessAction = (income = {}) => ({
@@ -21,7 +23,12 @@ export const incomePostSucessAction = (income = {}) => ({
   payload: income
 })
 
-export const portfolioGetSuccess = (portfolio = {}) => ({
+export const expensePostSucessAction = (expense = {}) => ({
+  type: EXPENSE_POST_SUCCESS,
+  payload: expense
+})
+
+export const portfolioGetSuccessAction = (portfolio = {}) => ({
   type: PORTFOLIO_GET_SUCCESS,
   payload: portfolio
 })
@@ -31,40 +38,48 @@ export const setErrorsAction = error => ({
   payload: error
 })
 
-export const setLastSavedIncome = (lastSavedIncome = {}) => ({
+export const setLastSavedIncomeAction = (lastSavedIncome = {}) => ({
   type: SET_LAST_SAVED_INCOME,
   payload: { lastSavedIncome }
 })
 
-export const setPortfolioLoading = () => ({
+export const setLastSavedExpenseAction = (lastSavedExpense = {}) => ({
+  type: SET_LAST_SAVED_EXPENSE,
+  payload: { lastSavedExpense }
+})
+
+export const setPortfolioLoadingAction = () => ({
   type: PORTFOLIO_LOADING
 })
 
-export const setCurrentPortfolio = (portfolio = {}) => ({
+export const setCurrentPortfolioAction = (portfolio = {}) => ({
   type: SET_PORTFOLIO,
   payload: portfolio
 })
 
-export const setCurrentUser = (user = {}) => ({
+export const setCurrentUserAction = (user = {}) => ({
   type: SET_CURRENT_USER,
   payload: user
 })
 
 // Get current portfolio
-export const getCurrentPortfolio = portfolioId => async dispatch => {
-  dispatch(setPortfolioLoading())
+export const getCurrentPortfolioAction = portfolioId => async dispatch => {
+  dispatch(setPortfolioLoadingAction())
   const { error, response } = await asyncWrapper(
     axios.get(`/api/portfolios/${portfolioId}`)
   )
   if (!error) {
-    dispatch(portfolioGetSuccess(response.data))
-    return dispatch(setCurrentPortfolio(response.data))
+    dispatch(portfolioGetSuccessAction(response.data))
+    return dispatch(setCurrentPortfolioAction(response.data))
   }
   return dispatch(setErrorsAction(error.response.data))
 }
 
 // Create portfolio
-export const createPortfolio = (portfolioData, history) => async dispatch => {
+export const createPortfolioAction = (
+  portfolioData,
+  history
+) => async dispatch => {
   const { error } = await asyncWrapper(
     axios.post('/api/portfolios/', portfolioData)
   )
@@ -73,55 +88,58 @@ export const createPortfolio = (portfolioData, history) => async dispatch => {
 }
 
 // Delete Account & Portfolio
-export const deleteAccount = () => async dispatch => {
+export const deleteAccountAction = () => async dispatch => {
   if (window.confirm('Are you sure? This can NOT be undone!')) {
     const { error } = await asyncWrapper(axios.delete('/api/portfolio'))
-    if (!error) return dispatch(setCurrentUser())
+    if (!error) return dispatch(setCurrentUserAction())
     return dispatch(setErrorsAction(error.response.data))
   }
 }
 
 // Add Income
-export const addIncome = incomeData => async dispatch => {
+export const addIncomeAction = incomeData => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.post('/api/incomes', incomeData)
   )
   if (!error) {
     dispatch(incomePostSucessAction(response.data))
-    return dispatch(setLastSavedIncome(response.data))
+    return dispatch(setLastSavedIncomeAction(response.data))
   }
   return dispatch(setErrorsAction(error.response.data))
 }
 
 // Delete Income
-export const deleteIncome = id => async dispatch => {
+export const deleteIncomeAction = id => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.delete(`/api/portfolio/incomes/${id}`)
   )
-  if (!error) return dispatch(setLastSavedIncome(response.data))
+  if (!error) return dispatch(setLastSavedIncomeAction(response.data))
   return dispatch(setErrorsAction(error.response.data))
 }
 
 // Add Expense
-export const addExpense = expenseData => async dispatch => {
+export const addExpenseAction = expenseData => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.post('/api/expenses', expenseData)
   )
-  if (!error) return dispatch(setCurrentPortfolio(response.data))
+  if (!error) {
+    dispatch(expensePostSucessAction(response.data))
+    return dispatch(setLastSavedExpenseAction(response.data))
+  }
   return dispatch(setErrorsAction(error.response.data))
 }
 
 // Delete Expense
-export const deleteExpense = id => async dispatch => {
+export const deleteExpenseAction = id => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.delete(`/api/portfolio/expenses/${id}`)
   )
-  if (!error) return dispatch(setCurrentPortfolio(response.data))
+  if (!error) return dispatch(setCurrentPortfolioAction(response.data))
   return dispatch(setErrorsAction(error.response.data))
 }
 
 // Add Bill
-export const addBill = (billData, history) => async dispatch => {
+export const addBillAction = (billData, history) => async dispatch => {
   const { error } = await asyncWrapper(
     axios.post('/api/portfolio/bills', billData)
   )
@@ -130,10 +148,10 @@ export const addBill = (billData, history) => async dispatch => {
 }
 
 // Delete Bill
-export const deleteBill = id => async dispatch => {
+export const deleteBillAction = id => async dispatch => {
   const { error, response } = await asyncWrapper(
     axios.delete(`/api/portfolio/bills/${id}`)
   )
-  if (!error) return dispatch(setCurrentPortfolio(response.data))
+  if (!error) return dispatch(setCurrentPortfolioAction(response.data))
   return dispatch(setErrorsAction(error.response.data))
 }
